@@ -7,6 +7,7 @@ on:
         description: "Release tag to publish"
         required: true
         type: string
+        default: "v${date +%Y.%m.%d}.${github.run_number}"
 
 permissions:
   contents: write
@@ -35,18 +36,12 @@ jobs:
       - name: Build debug APK and AAB
         run: ./gradlew assembleDebug bundleDebug
 
-      - name: Upload debug artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-artifacts
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/bundle/debug/*.aab
-
       - name: Upload release artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
           files: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/bundle/debug/*.aab
             app/build/outputs/apk/release/*.apk
             app/build/outputs/bundle/release/*.aab
