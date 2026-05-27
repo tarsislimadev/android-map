@@ -7,7 +7,6 @@ on:
         description: "Release tag to publish"
         required: true
         type: string
-        default: "v${date +%Y.%m.%d}.${github.run_number}"
 
 permissions:
   contents: write
@@ -36,10 +35,14 @@ jobs:
       - name: Build debug APK and AAB
         run: ./gradlew assembleDebug bundleDebug
 
+      - id: set_current_date_time
+        name: Set current date and time environment variable
+        run: echo "CURRENT_DATE_TIME=$(date +'%Y.%m.%d.%H%M%S')" >> $GITHUB_ENV
+
       - name: Upload release artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && env.CURRENT_DATE_TIME || github.ref_name }}
           files: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/bundle/debug/*.aab
